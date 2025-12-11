@@ -28,7 +28,7 @@ void execute_command(char *command, int *status) {
 
         // In case of error print : enseash: No such file or directory
         perror("enseash"); 
-        
+
         // If execlp fails, terminate child to avoid running parent code
         exit(1);
     }
