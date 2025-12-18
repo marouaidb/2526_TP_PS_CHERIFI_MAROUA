@@ -4,6 +4,7 @@
 #include "q4.h"
 #include "q5.h"
 #include "q6.h"
+#include "q7.h"
 
 int main(void) {
 
@@ -30,7 +31,7 @@ int main(void) {
                 find_arguments(command, args);
 
                 timer_start();
-                execute_complex_command(args, &status);
+                execute_complex_command_redir(args, &status);
                 timer_end();
             }
         }

@@ -14,6 +14,7 @@ void read_user_input(char *command) {
 
         return;
     }
+
     // Replace the newline character at the end with '\0' (NULL_CHAR)
     command[bytes_read - 1] = NULL_CHAR;
 }
@@ -24,9 +25,11 @@ void execute_command(char *command, int *status) {
 
     // Child process: execute the command
     if (pid == 0) {  
+
+        // Execute the command 
         execlp(command, command, NULL);
 
-        // In case of error print : enseash: No such file or directory
+        // Print an error message if execvp fails
         perror("enseash"); 
 
         // If execlp fails, terminate child to avoid running parent code
@@ -34,6 +37,7 @@ void execute_command(char *command, int *status) {
     }
 
     else {  
+
         // Parent process: wait for the child to finish         
         wait(status);
     }
