@@ -2,11 +2,14 @@
 #include "q2.h"
 #include "q3.h"
 #include "q4.h"
+#include "q5.h"
+#include "q6.h"
 
 int main(void) {
 
     char command[COMMAND_MAXSIZE] = {0};
-    
+    char *args[ARGS_MAXSIZE];
+
     // Set to -1 so the first prompt is simple (no previous command yet)
     int status = -1;
 
@@ -23,10 +26,12 @@ int main(void) {
             }
 
             if (result == SHELL_CONTINUE) {
-                timer_start();
-                execute_command(command, &status);
-                timer_end();
 
+                find_arguments(command, args);
+
+                timer_start();
+                execute_complex_command(args, &status);
+                timer_end();
             }
         }
     return 0;

@@ -4,6 +4,9 @@
 // Must be defined before any include: enables POSIX APIs needed for clock_gettime()
 #define _POSIX_C_SOURCE 199309L
 
+// Enable GNU extensions to avoid implicit declaration of strsep
+#define _DEFAULT_SOURCE 
+
 #include <sys/types.h>
 #include <string.h>
 #include <unistd.h>
