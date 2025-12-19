@@ -7,14 +7,14 @@ Each step introduces core system programming concepts such as low-level I/O , pr
 
 ## Question 1 — Welcome Message and Prompt Display
 
-#### Objective:
+### Objective:
 
 At startup, the shell must:
 - display a welcome message,
 - indicate how to exit the shell,
 - then show a prompt inviting the user to enter commands.
 
-#### Implementation Principle:
+### Implementation Principle:
 
 This question focuses on **basic output handling** using low-level system calls.
 
@@ -22,14 +22,14 @@ This question focuses on **basic output handling** using low-level system calls.
 - No higher-level I/O functions such as printf are used.
 - No user input is processed at this stage.
 
-#### Output
+### Output
 
 ![Shell output](img/q10.png)
 
 
 ## Question 2 — Reading and Executing Simple Commands
 
-#### Q2a — Reading User Input
+### Q2a — Reading User Input
 
 The shell waits for user input using the system call :
 
@@ -44,7 +44,7 @@ read(STDIN_FILENO, buffer, size);
 - The input buffer is converted into a valid C string by appending the null terminator (`\0`).
 - Only simple commands without arguments are handled at this stage.
 
-####  Q2b — Executing a Command
+###  Q2b — Executing a Command
 
 To execute a command, the shell relies on **process creation and execution** mechanisms provided by Unix systems.
 
@@ -58,7 +58,7 @@ This separation ensures that:
 - the shell itself continues running,
 - the executed command runs independently in the child process.
 
-#### Q2c — Command Loop
+### Q2c — Command Loop
 
 The shell execution logic is implemented inside an infinite loop (`while(1)`) :
 
@@ -69,7 +69,7 @@ The shell execution logic is implemented inside an infinite loop (`while(1)`) :
 
 This allows the shell to continuously process commands until it is explicitly terminated.
 
-#### Summary
+### Summary
 
 ```mermaid
 flowchart TD
@@ -83,23 +83,21 @@ flowchart TD
     H --> A
 ```
 
-#### Output
+### Output
 
 ![Shell output](img/q21.png)
 ![Shell output](img/q22.png)
 
 ## Question 3 — Handling exit and Ctrl+D
 
-#### Objective:
+### Objective:
 The shell must terminate cleanly in two cases:
 - When the user enters the `exit` command.
 - When `read()` returns `0`, indicating an end-of-file (Ctrl+D).
 
 In both cases, the shell exits after displaying a termination message.
 
-These conditions allow the shell to be closed in a controlled and predictable manner.
-
-#### Summary
+### Summary
 
 ```mermaid
 flowchart TD
@@ -109,10 +107,23 @@ flowchart TD
     B -->|Empty command Enter| D["Continue loop without executing"]
     B -->|Any other command| E["Continue to execute command"]
 ```
-#### Output
+### Output
 
+*Exit using the exit command :*
 ![Shell output](img/q31.png)
+
+This corresponds to a voluntary and explicit termination of the shell.
+
+*Exit using Ctrl + D (EOF) :*
 ![Shell output](img/q32.png)
+
+- Ctrl + D sends an EOF (End Of File) on standard input
+- The shell detects that no more input is available
+- It exits and prints Bye bye...
+  
+This corresponds to an implicit termination of the shell due to end-of-input.
+
+Both these conditions allow the shell to be closed in a controlled and predictable manner.
 
 ## Question 4 — Displaying the Command Termination Status
 #### Objective:
@@ -248,14 +259,12 @@ The difference between these two timestamps gives the execution duration of the 
 
 The clock `CLOCK_MONOTONIC` is used to ensure that the measured time is not affected by system clock changes.
 
-###  Observed Behavior
+### Output
+![Shell output](img/q50.png)
 
 After executing a command, the shell displays both:
 - the termination status (exit code or signal).
 - the execution time.
-
-#### Output
-![Shell output](img/q50.png)
 
 ##  Question 6 — Executing a Complex Command (with Arguments)
 
@@ -300,7 +309,7 @@ Once the argument array is ready, execution is done using:
 - `execvp()` to run the command with its arguments
 - `wait()` so the parent (the shell) waits for the child and retrieves its status
 
-Prototype:
+*Prototype:*
 
 ```c
 void execute_complex_command(char **command, int *status);
@@ -310,14 +319,20 @@ void execute_complex_command(char **command, int *status);
 
 If execution fails, the child prints an error using perror("enseash") and exits with code 1.
 
-## Output
+### Output
 ![Shell output](img/q60.png)
+
+The command `hostname -i` demonstrates the execution of a complex command with arguments.
+
+The output `127.0.1.1` corresponds to the loopback IP address of the local machine, which is the expected result for the command `hostname -i`.
+
+The prompt is  updated with the return code (`exit:0`) and the execution time.
 
 The shell can now execute commands with arguments, while still displaying:
 - the exit code or signal (Question 4)
 - the execution time (Question 5)
   
-#### Summary
+### Summary
 
 ```mermaid
 ---
@@ -413,7 +428,7 @@ The function `execute_complex_command_redir()`:
 - the child applies redirection and executes the command with `execvp()`
 - the parent waits for termination using `wait()`
 
-#### Output
+### Output
 
 With this implementation:
 
@@ -426,7 +441,7 @@ The output 21 indicates that the directory contains 21 files.
   
 This reproduces the standard shell behaviour for basic I/O redirections.
 
-#### Summary
+### Summary
 
 ```mermaid
 ---
