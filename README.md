@@ -110,11 +110,13 @@ flowchart TD
 ### Output
 
 *Exit using the exit command :*
+
 ![Shell output](img/q31.png)
 
 This corresponds to a voluntary and explicit termination of the shell.
 
 *Exit using Ctrl + D (EOF) :*
+
 ![Shell output](img/q32.png)
 
 - Ctrl + D sends an EOF (End Of File) on standard input
