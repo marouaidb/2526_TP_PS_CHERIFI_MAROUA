@@ -114,16 +114,10 @@ flowchart TD
 ![Shell output](img/q31.png)
 ![Shell output](img/q32.png)
 
-
 ## Question 4 — Displaying the Command Termination Status
 #### Objective:
 
-After executing a command, the shell updates its prompt to indicate how the previous command terminated.
-The prompt format becomes:
-```text
-enseash [exit:N] %
-```
-where N represents the return code of the executed command.
+After executing a command, the shell updates its prompt to indicate the termination status of the previously executed command.
 
 #### Termination Analysis :
 
@@ -134,34 +128,143 @@ wait(&status);
 
 Two termination cases exist in Unix systems :
 
-1-  *Normal termination* : the command exits using return or exit().
+1-  *Normal termination* (the command exits using return or exit()) :
 
-2- *Termination by signal* : the command is interrupted by a signal (e.g. segmentation fault, kill).
+Every command returns an exit code when it finishes:
+- Exit code 0 means that the command executed successfully.
+- Exit code different from 0 means that an error occurred during execution.
 
-#### Implemented Scope :
-For now, only the normal termination case is implemented.
-As a result:
-- The shell displays the return code of commands that terminate normally.
-- The termination by signal is not handled yet.
+For example:
 
+- The command `true` always succeeds and therefore returns exit code 0.
+- The command `false` always fails and therefore returns exit code 1.
+- If a command does not exist or cannot be executed, it also returns a non-zero exit code.
+
+In the shell, this exit code is displayed in the prompt:
+```text
+enseash [exit:N] %
+```
+Where `N` corresponds to the exit code returned by the previously executed command.
+
+![Shell output](img/q42.png)
+
+This behavior allows the shell to indicate whether the last command succeeded or failed.
+
+2- *Termination by signal* :  the shell detects and reports a command that terminates abnormally, i.e. interrupted by a signal (e.g. segmentation fault, kill).
+
+To test this behavior, a dedicated program `test_signal_-q4` is executed from the shell.
+
+This program:
+
+- retrieves its own process identifier using `getpid()`,
+- enters an infinite loop,
+- periodically prints its PID to indicate that it is running,
+- can only be stopped by receiving an external signal.
+
+As long as no signal is sent, the program runs normally.
+
+Two terminals are used:
+
+![Shell output](img/q41.png)
+
+1. **First terminal**
+
+The program `test_signal_q4` is launched from `enseash`.  
+The shell displays that the process is running and prints its PID repeatedly.
+
+2. **Second terminal**
+
+The process is terminated manually using the command:
+
+```bash
+kill -9 <pid>
+```
+where `<pid>` corresponds to the PID printed by the running program.
+
+After receiving the signal:
+
+- the running program stops immediately,
+- control returns to the shell,
+- the prompt is updated to indicate signal-based termination
+
+The shell displays:
+
+```text
+enseash [sign:9] %
+```
+This confirms that : 
+- the process did not terminate normally,
+- it was interrupted by signal number 9 (`SIGKILL`).
 
 #### Summary
 
 ```mermaid
 flowchart TD
     A["Check status of previous command"] --> B["status < 0 ?"]
-    B -->|Yes| C["Display simple shell prompt"]
     B -->|No| D["WIFEXITED(status) ?"]
     D -->|Yes| E["Display previous command exit code"]
+
+    B -->|Yes| C["Display simple shell prompt"]
+    
     D -->|No| F["WIFSIGNALED(status) ?"]
-    F -->|Yes| G["Display signal number that terminated command"]
     F -->|No| C
+
+    F -->|Yes| G["Display signal number that terminated command"]
 ```
 
-#### Output
+## Question 5 - 
 
-![Shell output](img/q40.png)
+###  Objective
 
+The goal of this question is to measure the **execution time of each command** and display it directly in the shell prompt.
+
+The prompt format is extended to include the execution duration in milliseconds:
+
+```text
+enseash [exit:N|Tms] %
+enseash [sign:S|Tms] %
+```
+
+Where :
+
+- N is the exit code returned by the command,
+- S is the signal number if the command was terminated by a signal,
+- T represents the execution time in milliseconds.
+
+###  Implementation Principle
+
+To measure the execution time, the shell uses the system call:
+
+```c
+clock_gettime(CLOCK_MONOTONIC, &ts);
+```
+Two timestamps are recorded:
+
+- one just before launching the command,
+- one just after the command terminates.
+
+The difference between these two timestamps gives the execution duration of the command.
+
+The clock `CLOCK_MONOTONIC` is used to ensure that the measured time is not affected by system clock changes.
+
+###  Observed Behavior
+
+After executing a command, the shell displays both:
+- the termination status (exit code or signal).
+- the execution time.
+
+![Shell output](img/q50.png)
+
+## Question 6 - 
+
+![Shell output](img/q60.png)
+
+## Question 7 - 
+
+
+![Shell output](img/q71.png)
+
+![Shell output](img/q72.png)
 
 
 
