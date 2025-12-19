@@ -200,16 +200,17 @@ This confirms that :
 
 ```mermaid
 flowchart TD
-    A["Check status of previous command"] --> B["status < 0 ?"]
+    A["display_status(status)"] --> B["status < 0 ?"]
+
+    B -->|Yes| C["Display simple shell prompt<br/>write(SHELL_PROMPT)"]
+
     B -->|No| D["WIFEXITED(status) ?"]
-    D -->|Yes| E["Display previous command exit code"]
+    D -->|Yes| E["Display exit code<br/>WEXITSTATUS(status)"]
 
-    B -->|Yes| C["Display simple shell prompt"]
-    
     D -->|No| F["WIFSIGNALED(status) ?"]
-    F -->|No| C
+    F -->|Yes| G["Display signal number<br/>WTERMSIG(status)"]
 
-    F -->|Yes| G["Display signal number that terminated command"]
+    F -->|No| H["No output"]
 ```
 
 ## Question 5 - Measuring Command Execution Time
@@ -253,23 +254,120 @@ After executing a command, the shell displays both:
 - the termination status (exit code or signal).
 - the execution time.
 
+#### Output
 ![Shell output](img/q50.png)
 
 ## Question 6 - 
+
+#### Output
 
 ![Shell output](img/q60.png)
 
 ## Question 7 - 
 
+#### Summary
+
+
+```mermaid
+---
+title: find_redirection – Redirection Symbol Detection
+---
+flowchart TD
+    A["Start scanning args[]"] --> B{"args[i] != NULL ?"}
+
+    B -->|No| H["Return REDIR_NONE"]
+
+    B -->|Yes| C{"args[i] == '<' ?"}
+    C -->|Yes| D["Set position = i<br/>Return REDIR_IN"]
+
+    C -->|No| E{"args[i] == '>' ?"}
+    E -->|Yes| F["Set position = i<br/>Return REDIR_OUT"]
+
+    E -->|No| G["i++"]
+    G --> B
+```
+
+```mermaid
+---
+title: apply_redirection – File Descriptor Configuration
+---
+flowchart TD
+    A["apply_redirection(args, position, type)"] --> B["Get file name = args[position + 1]"]
+
+    B --> C{"type == REDIR_IN ?"}
+
+    C -->|Yes| D["Open file (O_RDONLY)"]
+    C -->|No| E["Open file (O_WRONLY | O_CREAT | O_TRUNC)"]
+
+    D --> F{"fd == -1 ?"}
+    E --> F
+
+    F -->|Yes| G["perror('open')<br/>exit(EXIT_FAILURE)"]
+    F -->|No| H["dup2(fd, STDIN or STDOUT)"]
+
+    H --> I["close(fd)"]
+    I --> J["args[position] = NULL"]
+```
+
+```mermaid
+---
+title: execute_complex_command_redir – Command Execution with Redirection
+---
+flowchart TD
+    A["execute_complex_command_redir(args, status, position, type)"] --> B["fork()"]
+
+    B -->|Child| C["apply_redirection()"]
+    C --> D["execvp(command)"]
+    D -->|Fail| E["perror + exit"]
+
+    B -->|Parent| F["wait(status)"]
+```
+
+
+#### Output
 
 ![Shell output](img/q71.png)
 
 ![Shell output](img/q72.png)
 
+## Question 8 - 
 
+#### Summary
 
+*Pour **find_redirection_and_pipe** on ajoute juste un strcmp sur "|" à find_redirection* de question 7.
 
+```mermaid
+---
+title: execute_complex_command_pipe – Command Execution with pipe
+---
+flowchart TD
+    A["execute_complex_command_pipe(args, status, position)"] --> B["Create pipe()"]
 
+    B -->|Failure| C["perror('pipe')<br/>Return"]
+    B -->|Success| D["Split args at '|'"]
+
+    D --> E["fork() → pid1"]
+
+    E -->|Child 1| F["Redirect stdout to pipe write end<br/>dup2(fd_write, STDOUT)"]
+    F --> G["Close pipe fds"]
+    G --> H["execvp(left command)"]
+    H -->|Fail| I["perror + exit"]
+
+    E -->|Parent| J["fork() → pid2"]
+
+    J -->|Child 2| K["Redirect stdin to pipe read end<br/>dup2(fd_read, STDIN)"]
+    K --> L["Close pipe fds"]
+    L --> M["execvp(right command)"]
+    M -->|Fail| N["perror + exit"]
+
+    J -->|Parent| O["Close pipe fds"]
+    O --> P["waitpid(pid1)"]
+    P --> Q["waitpid(pid2)"]
+```
+
+#### Output
+
+![Shell output](img/q80.png)
 
 
 
