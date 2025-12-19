@@ -37,7 +37,7 @@ void execute_complex_command(char **args, int *status) {
         perror("enseash"); 
 
         // If execlp fails, terminate child to avoid running parent code
-        exit(1);
+        exit(EXIT_FAILURE);
 
     }
     else {

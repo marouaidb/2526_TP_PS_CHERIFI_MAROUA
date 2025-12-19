@@ -259,6 +259,40 @@ After executing a command, the shell displays both:
 
 ## Question 6 - 
 
+#### Summary
+
+
+```mermaid
+---
+title: find_arguments – Parsing Command into Arguments
+---
+flowchart TD
+    A["Receive command line string"] --> B["Split command using spaces (strsep)"]
+
+    B --> C["Ignore empty arg"]
+    C --> D["Store arg in args[]"]
+
+    D --> E["Limit number of arguments (ARGS_MAXSIZE)"]
+    E --> F["Terminate args[] with NULL"]
+
+    F --> G["args[] ready for execvp"]
+```
+
+```mermaid
+---
+title: execute_complex_command 
+---
+flowchart TD
+    A["Shell receives args[]"] --> B["fork()"]
+
+    B -->|Child process| C["execvp(args[0], args)"]
+    C -->|Failure| D["perror('enseash')<br/>exit(EXIT_FAILURE)"]
+
+    B -->|Parent process| E["wait(status)"]
+    E --> F["Shell ready for next command"]
+```
+
+
 #### Output
 
 ![Shell output](img/q60.png)
@@ -267,6 +301,7 @@ After executing a command, the shell displays both:
 
 #### Summary
 
+*(**find_redirection**) is always called in main. It determines whether the command to be executed is a simple command or a complex command that uses redirection. In addition, it provides the position of the redirection symbol within the argument array.*
 
 ```mermaid
 ---
@@ -321,6 +356,7 @@ flowchart TD
     D -->|Fail| E["perror + exit"]
 
     B -->|Parent| F["wait(status)"]
+    F --> J["Shell ready for next command"]
 ```
 
 
@@ -363,6 +399,7 @@ flowchart TD
     J -->|Parent| O["Close pipe fds"]
     O --> P["waitpid(pid1)"]
     P --> Q["waitpid(pid2)"]
+    Q --> R["Shell ready for next command"]
 ```
 
 #### Output
